@@ -96,18 +96,17 @@ Running the helper :
 
 ## NED migration example :
 
-
 ```
 * ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ *
 
 [*] Ned Migration for:
-        [!] Device SEGW-VAL3-1
+        [!] Device NETSIM-DEVICE-1
         [!] dry-run: False
         [!] no-networking: True
 
 * ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ *
 
-[*] The Device SEGW-VAL3-1 is onboarded
+[*] The Device NETSIM-DEVICE-1 is onboarded
 
 * ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ *
 
@@ -122,46 +121,46 @@ Running the helper :
 
 * ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ *
 
-[*]Running Ned Migration for the device SEGW-VAL3-1 in dry-run mode
+[*]Running Ned Migration for the device NETSIM-DEVICE-1 in dry-run mode
 
         [!] Modified Paths : The path that has been modified.
 
-                Path: /devices/device[name='SEGW-VAL3-1']/config/alu:system/security/snmp/community
+                Path: /devices/device[name='NETSIM-DEVICE-1']/config/alu:system/security/snmp/community
                 Info: list key has changed
-                Path: /devices/device[name='SEGW-VAL3-1']/config/alu:router/policy-options/policy-statement/entry/from/protocol/protocol
+                Path: /devices/device[name='NETSIM-DEVICE-1']/config/alu:router/policy-options/policy-statement/entry/from/protocol/protocol
                 Info: leaf/leaf-list type has changed
-                Path: /devices/device[name='SEGW-VAL3-1']/config/alu:router/interface/bfd/type
+                Path: /devices/device[name='NETSIM-DEVICE-1']/config/alu:router/interface/bfd/type
                 Info: leaf/leaf-list type has changed
-                Path: /devices/device[name='SEGW-VAL3-1']/config/alu:router/interface/ipv6/urpf-check
+                Path: /devices/device[name='NETSIM-DEVICE-1']/config/alu:router/interface/ipv6/urpf-check
                 Info: node type has changed from non-presence container to presence container
-                Path: /devices/device[name='SEGW-VAL3-1']/config/alu:service/vprn/interface/ipv6/urpf-check
+                Path: /devices/device[name='NETSIM-DEVICE-1']/config/alu:service/vprn/interface/ipv6/urpf-check
                 Info: node type has changed from non-presence container to presence container
-                Path: /devices/device[name='SEGW-VAL3-1']/config/alu:service/ies/interface/ipv6/urpf-check
+                Path: /devices/device[name='NETSIM-DEVICE-1']/config/alu:service/ies/interface/ipv6/urpf-check
                 Info: node type has changed from non-presence container to presence container
-                Path: /devices/device[name='SEGW-VAL3-1']/config/alu:qos/sap-ingress/dscp/id
+                Path: /devices/device[name='NETSIM-DEVICE-1']/config/alu:qos/sap-ingress/dscp/id
                 Info: leaf/leaf-list type has changed
-                Path: /devices/device[name='SEGW-VAL3-1']/config/alu:qos/sap-ingress/dscp
+                Path: /devices/device[name='NETSIM-DEVICE-1']/config/alu:qos/sap-ingress/dscp
                 Info: list key has changed; leaf 'id' has changed type
-        [!] Affected services : The service instances/points that touches the migrated device SEGW-VAL3-1
+        [!] Affected services : The service instances/points that touches the migrated device NETSIM-DEVICE-1
 
-                [1]/configure_ipsecgw[num_ipsecgw='28'][device='SEGW-VAL3-1'] 
+                [1]/configure_ipsecgw[num_ipsecgw='28'][device='NETSIM-DEVICE-1'] 
 
         [!] Affected services with changes: the service instances/pointsthat are affected by the data model 
-                 changes on the migrated device. that touches the migrated device SEGW-VAL3-1
+                 changes on the migrated device. that touches the migrated device NETSIM-DEVICE-1
 
 
 * ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ *
 
-[?] There are 1 affected instances by this Ned Migration on SEGW-VAL3-1
-[?] There are 0 affected instances with changes by this Ned Migration on SEGW-VAL3-1
+[?] There are 1 affected instances by this Ned Migration on NETSIM-DEVICE-1
+[?] There are 0 affected instances with changes by this Ned Migration on NETSIM-DEVICE-1
 [?] Would you like to continue with the Ned migration?
 (y/n/CANCEL)
 y
 
 * ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ *
 
-[*] Running Ned Migration for the device SEGW-VAL3-1
-[*] Ned Migration completed successfully for the device SEGW-VAL3-1
+[*] Running Ned Migration for the device NETSIM-DEVICE-1
+[*] Ned Migration completed successfully for the device NETSIM-DEVICE-1
 [*] Writing migration report into file migration-12-21-2021-11:32:08.json 
 
 * ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ *
@@ -173,35 +172,35 @@ y
 <INFO> 19-Dec-2021::15:51:09.181 NED Migration : Starting...
 <INFO> 19-Dec-2021::15:51:09.181 NED Migration : Ned Migration Utility v1.2
 <INFO> 19-Dec-2021::15:51:09.181 NED Migration : Reading devices list file...
-<INFO> 19-Dec-2021::15:51:09.181 NED Migration : Ned Migration for:Device SEGW-ABG2-1;dry-run: False;no-networking: True;
+<INFO> 19-Dec-2021::15:51:09.181 NED Migration : Ned Migration for:Device NETSIM-DEVICE-1;dry-run: False;no-networking: True;
 <INFO> 19-Dec-2021::15:51:09.189 NED Migration : Maapi transaction started
-<INFO> 19-Dec-2021::15:51:09.215 NED Migration : The Device SEGW-ABG2-1 is onboarded
+<INFO> 19-Dec-2021::15:51:09.215 NED Migration : The Device NETSIM-DEVICE-1 is onboarded
 <INFO> 19-Dec-2021::15:51:09.216 NED Migration : Ned version alu-sr-cli-8.17 is loaded
 <INFO> 19-Dec-2021::15:51:09.220 NED Migration : Neds status: Current ned-id alu-sr-cli-8.17; Target ned-id: alu-sr-cli-8.17;
-<WARNING> 19-Dec-2021::15:51:09.220 NED Migration : The device SEGW-ABG2-1 is already with the ned-id alu-sr-cli-8.17
-<WARNING> 19-Dec-2021::15:51:09.221 NED Migration : Skipping Ned migration for the device SEGW-ABG2-1
+<WARNING> 19-Dec-2021::15:51:09.220 NED Migration : The device NETSIM-DEVICE-1 is already with the ned-id alu-sr-cli-8.17
+<WARNING> 19-Dec-2021::15:51:09.221 NED Migration : Skipping Ned migration for the device NETSIM-DEVICE-1
 <INFO> 19-Dec-2021::15:51:09.221 NED Migration : Maapi transction Closed
 <INFO> 19-Dec-2021::15:51:09.221 NED Migration : Ned Migration for:Device rtwr;dry-run: False;no-networking: True;
 <INFO> 19-Dec-2021::15:51:09.223 NED Migration : Maapi transaction started
 <ERROR> 19-Dec-2021::15:51:09.238 NED Migration : The Device rtwr is NOT onboarded
 <INFO> 19-Dec-2021::15:51:09.238 NED Migration : Maapi transction Closed
-<INFO> 19-Dec-2021::15:51:09.238 NED Migration : Ned Migration for:Device SEGW-ABG2-2;dry-run: False;no-networking: True;
+<INFO> 19-Dec-2021::15:51:09.238 NED Migration : Ned Migration for:Device NETSIM-DEVICE-2;dry-run: False;no-networking: True;
 <INFO> 19-Dec-2021::15:51:09.241 NED Migration : Maapi transaction started
-<INFO> 19-Dec-2021::15:51:09.255 NED Migration : The Device SEGW-ABG2-2 is onboarded
+<INFO> 19-Dec-2021::15:51:09.255 NED Migration : The Device NETSIM-DEVICE-2 is onboarded
 <INFO> 19-Dec-2021::15:51:09.256 NED Migration : Ned version alu-sr-cli-8.17 is loaded
 <INFO> 19-Dec-2021::15:51:09.259 NED Migration : Neds status: Current ned-id alu-sr-cli-8.13; Target ned-id: alu-sr-cli-8.17;
-<INFO> 19-Dec-2021::15:51:09.259 NED Migration : Running Ned Migration for the device SEGW-ABG2-2 in dry-run mode
+<INFO> 19-Dec-2021::15:51:09.259 NED Migration : Running Ned Migration for the device NETSIM-DEVICE-2 in dry-run mode
 <WARNING> 19-Dec-2021::15:51:10.50 NED Migration : Modified Paths : The path that has been modified
-<WARNING> 19-Dec-2021::15:51:10.50 NED Migration : Path: /devices/device[name='SEGW-ABG2-2']/config/alu:system/security/snmp/community ; Info: list key has changed
-<WARNING> 19-Dec-2021::15:51:10.50 NED Migration : Path: /devices/device[name='SEGW-ABG2-2']/config/alu:router/policy-options/policy-statement/entry/from/protocol/protocol ; Info: leaf/leaf-list type has changed
-<WARNING> 19-Dec-2021::15:51:10.50 NED Migration : Path: /devices/device[name='SEGW-ABG2-2']/config/alu:router/interface/bfd/type ; Info: leaf/leaf-list type has changed
-<WARNING> 19-Dec-2021::15:51:10.50 NED Migration : Path: /devices/device[name='SEGW-ABG2-2']/config/alu:router/interface/ipv6/urpf-check ; Info: node type has changed from non-presence container to presence container
-<WARNING> 19-Dec-2021::15:51:10.50 NED Migration : Path: /devices/device[name='SEGW-ABG2-2']/config/alu:service/vprn/interface/ipv6/urpf-check ; Info: node type has changed from non-presence container to presence container
-<WARNING> 19-Dec-2021::15:51:10.50 NED Migration : Path: /devices/device[name='SEGW-ABG2-2']/config/alu:service/ies/interface/ipv6/urpf-check ; Info: node type has changed from non-presence container to presence container
-<WARNING> 19-Dec-2021::15:51:10.51 NED Migration : Path: /devices/device[name='SEGW-ABG2-2']/config/alu:qos/sap-ingress/dscp/id ; Info: leaf/leaf-list type has changed
-<WARNING> 19-Dec-2021::15:51:10.51 NED Migration : Path: /devices/device[name='SEGW-ABG2-2']/config/alu:qos/sap-ingress/dscp ; Info: list key has changed; leaf 'id' has changed type
-<INFO> 19-Dec-2021::15:51:10.51 NED Migration : Running Ned Migration for the device SEGW-ABG2-2
-<INFO> 19-Dec-2021::15:51:10.51 NED Migration : Ned Migration completed successfully for the device SEGW-ABG2-2
+<WARNING> 19-Dec-2021::15:51:10.50 NED Migration : Path: /devices/device[name='NETSIM-DEVICE-2']/config/alu:system/security/snmp/community ; Info: list key has changed
+<WARNING> 19-Dec-2021::15:51:10.50 NED Migration : Path: /devices/device[name='NETSIM-DEVICE-2']/config/alu:router/policy-options/policy-statement/entry/from/protocol/protocol ; Info: leaf/leaf-list type has changed
+<WARNING> 19-Dec-2021::15:51:10.50 NED Migration : Path: /devices/device[name='NETSIM-DEVICE-2']/config/alu:router/interface/bfd/type ; Info: leaf/leaf-list type has changed
+<WARNING> 19-Dec-2021::15:51:10.50 NED Migration : Path: /devices/device[name='NETSIM-DEVICE-2']/config/alu:router/interface/ipv6/urpf-check ; Info: node type has changed from non-presence container to presence container
+<WARNING> 19-Dec-2021::15:51:10.50 NED Migration : Path: /devices/device[name='NETSIM-DEVICE-2']/config/alu:service/vprn/interface/ipv6/urpf-check ; Info: node type has changed from non-presence container to presence container
+<WARNING> 19-Dec-2021::15:51:10.50 NED Migration : Path: /devices/device[name='NETSIM-DEVICE-2']/config/alu:service/ies/interface/ipv6/urpf-check ; Info: node type has changed from non-presence container to presence container
+<WARNING> 19-Dec-2021::15:51:10.51 NED Migration : Path: /devices/device[name='NETSIM-DEVICE-2']/config/alu:qos/sap-ingress/dscp/id ; Info: leaf/leaf-list type has changed
+<WARNING> 19-Dec-2021::15:51:10.51 NED Migration : Path: /devices/device[name='NETSIM-DEVICE-2']/config/alu:qos/sap-ingress/dscp ; Info: list key has changed; leaf 'id' has changed type
+<INFO> 19-Dec-2021::15:51:10.51 NED Migration : Running Ned Migration for the device NETSIM-DEVICE-2
+<INFO> 19-Dec-2021::15:51:10.51 NED Migration : Ned Migration completed successfully for the device NETSIM-DEVICE-2
 <INFO> 19-Dec-2021::15:51:10.51 NED Migration : Maapi transction Closed
 <INFO> 19-Dec-2021::15:51:55.856 NED Migration : Ned Migration for:Device SEGW-LIL2-2;dry-run: False;no-networking: True;
 <INFO> 19-Dec-2021::15:51:55.860 NED Migration : Maapi transaction started
@@ -233,7 +232,7 @@ y
 ## JSON report:
 ```
 {
-    "SEGW-ABG2-2": {
+    "NETSIM-DEVICE-2": {
         "options": {
             "dry-run": false,
             "no-networking": true,
@@ -252,18 +251,18 @@ y
         "dry-run": {
             "modified-paths": {
                 "deleted": {},
-                "/devices/device[name='SEGW-ABG2-2']/config/alu:system/security/snmp/community": "list key has changed",
-                "/devices/device[name='SEGW-ABG2-2']/config/alu:router/policy-options/policy-statement/entry/from/protocol/protocol": "leaf/leaf-list type has changed",
-                "/devices/device[name='SEGW-ABG2-2']/config/alu:router/interface/bfd/type": "leaf/leaf-list type has changed",
-                "/devices/device[name='SEGW-ABG2-2']/config/alu:router/interface/ipv6/urpf-check": "node type has changed from non-presence container to presence container",
-                "/devices/device[name='SEGW-ABG2-2']/config/alu:service/vprn/interface/ipv6/urpf-check": "node type has changed from non-presence container to presence container",
-                "/devices/device[name='SEGW-ABG2-2']/config/alu:service/ies/interface/ipv6/urpf-check": "node type has changed from non-presence container to presence container",
-                "/devices/device[name='SEGW-ABG2-2']/config/alu:qos/sap-ingress/dscp/id": "leaf/leaf-list type has changed",
-                "/devices/device[name='SEGW-ABG2-2']/config/alu:qos/sap-ingress/dscp": "list key has changed; leaf 'id' has changed type"
+                "/devices/device[name='NETSIM-DEVICE-2']/config/alu:system/security/snmp/community": "list key has changed",
+                "/devices/device[name='NETSIM-DEVICE-2']/config/alu:router/policy-options/policy-statement/entry/from/protocol/protocol": "leaf/leaf-list type has changed",
+                "/devices/device[name='NETSIM-DEVICE-2']/config/alu:router/interface/bfd/type": "leaf/leaf-list type has changed",
+                "/devices/device[name='NETSIM-DEVICE-2']/config/alu:router/interface/ipv6/urpf-check": "node type has changed from non-presence container to presence container",
+                "/devices/device[name='NETSIM-DEVICE-2']/config/alu:service/vprn/interface/ipv6/urpf-check": "node type has changed from non-presence container to presence container",
+                "/devices/device[name='NETSIM-DEVICE-2']/config/alu:service/ies/interface/ipv6/urpf-check": "node type has changed from non-presence container to presence container",
+                "/devices/device[name='NETSIM-DEVICE-2']/config/alu:qos/sap-ingress/dscp/id": "leaf/leaf-list type has changed",
+                "/devices/device[name='NETSIM-DEVICE-2']/config/alu:qos/sap-ingress/dscp": "list key has changed; leaf 'id' has changed type"
             }
         }
     },
-    "SEGW-VAL3-1": {
+    "NETSIM-DEVICE-1": {
         "options": {
             "dry-run": false,
             "no-networking": true,
@@ -282,17 +281,17 @@ y
         "dry-run": {
             "modified-paths": {
                 "deleted": {},
-                "/devices/device[name='SEGW-VAL3-1']/config/alu:system/security/snmp/community": "list key has changed",
-                "/devices/device[name='SEGW-VAL3-1']/config/alu:router/policy-options/policy-statement/entry/from/protocol/protocol": "leaf/leaf-list type has changed",
-                "/devices/device[name='SEGW-VAL3-1']/config/alu:router/interface/bfd/type": "leaf/leaf-list type has changed",
-                "/devices/device[name='SEGW-VAL3-1']/config/alu:router/interface/ipv6/urpf-check": "node type has changed from non-presence container to presence container",
-                "/devices/device[name='SEGW-VAL3-1']/config/alu:service/vprn/interface/ipv6/urpf-check": "node type has changed from non-presence container to presence container",
-                "/devices/device[name='SEGW-VAL3-1']/config/alu:service/ies/interface/ipv6/urpf-check": "node type has changed from non-presence container to presence container",
-                "/devices/device[name='SEGW-VAL3-1']/config/alu:qos/sap-ingress/dscp/id": "leaf/leaf-list type has changed",
-                "/devices/device[name='SEGW-VAL3-1']/config/alu:qos/sap-ingress/dscp": "list key has changed; leaf 'id' has changed type"
+                "/devices/device[name='NETSIM-DEVICE-1']/config/alu:system/security/snmp/community": "list key has changed",
+                "/devices/device[name='NETSIM-DEVICE-1']/config/alu:router/policy-options/policy-statement/entry/from/protocol/protocol": "leaf/leaf-list type has changed",
+                "/devices/device[name='NETSIM-DEVICE-1']/config/alu:router/interface/bfd/type": "leaf/leaf-list type has changed",
+                "/devices/device[name='NETSIM-DEVICE-1']/config/alu:router/interface/ipv6/urpf-check": "node type has changed from non-presence container to presence container",
+                "/devices/device[name='NETSIM-DEVICE-1']/config/alu:service/vprn/interface/ipv6/urpf-check": "node type has changed from non-presence container to presence container",
+                "/devices/device[name='NETSIM-DEVICE-1']/config/alu:service/ies/interface/ipv6/urpf-check": "node type has changed from non-presence container to presence container",
+                "/devices/device[name='NETSIM-DEVICE-1']/config/alu:qos/sap-ingress/dscp/id": "leaf/leaf-list type has changed",
+                "/devices/device[name='NETSIM-DEVICE-1']/config/alu:qos/sap-ingress/dscp": "list key has changed; leaf 'id' has changed type"
             },
             "affected-services": {
-                "1": "/configure_ipsecgw[num_ipsecgw='28'][device='SEGW-VAL3-1']"
+                "1": "/configure_ipsecgw[num_ipsecgw='28'][device='NETSIM-DEVICE-1']"
             },
             "affected-services-with-changes": {}
         }
