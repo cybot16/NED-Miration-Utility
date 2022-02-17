@@ -92,9 +92,11 @@ Running the helper :
                             Perform the Ned Migration using the new-ned-id provided in the input
       --file FILE, -f FILE  Path of the file containing the list of devices to perform NED migration on.
                                                 The devices are newline-delimited
----                    
+---    
 
 ## NED migration example :
+
+This is a NED migration that is executed on the device NETSIM-DEVICE-1
 
 ```
 * ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ *
