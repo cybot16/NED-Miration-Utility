@@ -1,7 +1,30 @@
-# SFR Ned Migration utility :
+# NED Migration Utility
 
 [![forthebadge](https://forthebadge.com/images/badges/made-with-python.svg)](https://forthebadge.com)
+
+The NMU(NED Migration Utility) is tool that demystifies the NED migration process, and makes it safe for NSO operators to run NED migrations on a list of devices in a batch fashion. Thus gaining operationnal time while avoiding side effects.
+
+NED migrations usually need to be ran over a number of devices that needs to be migrated, and every device has its own conditions and states that  may affect the services that are configured on it.
+
+The NMU gives the possibility to the users to run migrations in a safe manner, it can migrate devices that do not have special conditions automatically, and gives the user the possibility to deal seperatly with caveats.
+The NMU generates reports that contain all the affected services, device state, migrated paths and much more. 
+
 ---
+## Prerequisites
+- The NCS minimum version is v5.2
+- Python minimum version is v.3.6
+- Local and System NCS installs are compliant
+---
+## Getting started :
+Cloning the github repository :
+```
+git clone https://github.com/cybot16/NED-Miration-Utility.git
+```
+Running the helper :
+```
+./ned_migration.py -h
+```
+
 ## Usage :
 
      ______  _______ _____      ______  _                       _             
@@ -20,7 +43,7 @@
                                            (____/ v1.2
 
 
-    usage: ned_migration.py [-h] [--dry-run] [--no-networking] --new-ned-id
+    usage: ./ned_migration.py [-h] [--dry-run] [--no-networking] --new-ned-id
                             NEW_NED_ID --file FILE
 
     Ned Migration utility to facilitate the  ned migration process for multiple devices in one go.
