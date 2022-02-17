@@ -143,7 +143,7 @@ Running the helper :
                 Info: list key has changed; leaf 'id' has changed type
         [!] Affected services : The service instances/points that touches the migrated device NETSIM-DEVICE-1
 
-                [1]/configure_ipsecgw[num_ipsecgw='28'][device='NETSIM-DEVICE-1'] 
+                [1]/l3vpn[instance='volvo'][device='NETSIM-DEVICE-1'] 
 
         [!] Affected services with changes: the service instances/pointsthat are affected by the data model 
                  changes on the migrated device. that touches the migrated device NETSIM-DEVICE-1
@@ -218,7 +218,7 @@ y
 <WARNING> 19-Dec-2021::15:51:56.521 NED Migration : Path: /devices/device[name='SEGW-LIL2-2']/config/alu:qos/sap-ingress/dscp/id ; Info: leaf/leaf-list type has changed
 <WARNING> 19-Dec-2021::15:51:56.521 NED Migration : Path: /devices/device[name='SEGW-LIL2-2']/config/alu:qos/sap-ingress/dscp ; Info: list key has changed; leaf 'id' has changed type
 <WARNING> 19-Dec-2021::15:51:56.521 NED Migration : Affected services : The service instances/points that touches the migrated device SEGW-LIL2-2
-<CRITICAL> 19-Dec-2021::15:51:56.521 NED Migration : 1 : /configure_ipsecgw[num_ipsecgw='161'][device='SEGW-LIL2-2']
+<CRITICAL> 19-Dec-2021::15:51:56.521 NED Migration : 1 : /l3vpn[instance='volvo2'][device='SEGW-LIL2-2']
 <WARNING> 19-Dec-2021::15:51:56.521 NED Migration : Affected services with changes: the service instances/pointsthat are affected by the data model changes on the migrated device. that touches the migrated device SEGW-LIL2-2
 <INFO> 19-Dec-2021::15:51:56.521 NED Migration : There are 1 affected instances by this Ned Migration on SEGW-LIL2-2
 <INFO> 19-Dec-2021::15:51:56.521 NED Migration : There are 0 affected instances by this Ned Migration on SEGW-LIL2-2
@@ -291,7 +291,7 @@ y
                 "/devices/device[name='NETSIM-DEVICE-1']/config/alu:qos/sap-ingress/dscp": "list key has changed; leaf 'id' has changed type"
             },
             "affected-services": {
-                "1": "/configure_ipsecgw[num_ipsecgw='28'][device='NETSIM-DEVICE-1']"
+                "1": "/l3vpn[instance='volvo'][device='NETSIM-DEVICE-1']"
             },
             "affected-services-with-changes": {}
         }
