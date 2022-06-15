@@ -55,7 +55,7 @@ import json
 from datetime import datetime
 from dataclasses import dataclass
 
-__version__ = "1.2"
+__version__ = "1.3"
 
 FIGLET = f"""
  ______  _______ _____      ______  _                       _             
@@ -279,7 +279,7 @@ def write_json(filename, data):
 def check_already_migrated(device, new_ned_id):
     # Checking if the device is already migration to avoid getting errors
     ned_id = ncs.application.get_ned_id(device)
-    return True if new_ned_id in ned_id else False
+    return new_ned_id in ned_id 
 
 def check_ned_package(root, new_ned_id):
     nedNotLoaded = False
@@ -411,16 +411,15 @@ def execute_migration(root, device, new_ned_id, no_networking, dry_run):
         print(f"{signs.ERROR} Error while trying to run ned migrate with flags dry-run {dry_run} ; no-networking {no_networking} for {device}\n")
         print(f"{signs.ERROR} Error: {e}")
 
-        # Logging Error
-        logging.error(f"Error while trying to run ned migrate with flags : dry-run {dry_run}; no-networking {no_networking} for {device} ")
-        logging.error(f"Error: {e}")
+        # Logging Exception
+        logging.exception(f"Error while trying to run ned migrate with flags : dry-run {dry_run}; no-networking {no_networking} for {device} : {e} ")
 
         # Updating migration report
         migration_report[device]["status"] = 'Error When Migration'
 
 
 def ned_migrate(root, device, new_ned_id, dry_run, no_networking):
-
+    
     # Display and logging info
     print(f"{signs.OK} Running Ned Migration for the device {signs.OKBLUE}{device} in dry-run{signs.ENDC} mode\n")
     logging.info(f"Running Ned Migration for the device {device} in dry-run mode")
@@ -484,7 +483,7 @@ def ned_migrate(root, device, new_ned_id, dry_run, no_networking):
                 
             # Logging the number of affected service instances
             logging.info(f"There are {number_affected_services} affected instances by this Ned Migration on {device}")
-            logging.info(f"There are {number_affected_services_with_changes} affected instances by this Ned Migration on {device}")
+            logging.info(f"There are {number_affected_services_with_changes} affected instances with changes by this Ned Migration on {device}")
             
             # Giving the user the option to chose how to proceed with this migration knowing that there are affected services
             if not dry_run:
@@ -523,6 +522,7 @@ if __name__ == "__main__":
     print(f"{signs.OK} Starting...")
     logging.info("Starting...")
     logging.info(f"Ned Migration Utility v{__version__}")
+    logging.info(f"Options used : dry-run {dry_run} no-networking {no_networking} new-ned-id {new_ned_id}  device-list-file {devices_list_file}")
     # Reading the devices_list input file
     try:
         devices_list = open(devices_list_file, "r").readlines()
@@ -532,6 +532,7 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"{signs.ERROR} Error while reading file...")
         print(f"{signs.ERROR} {e}")
+        logging.exception(f"Error while reading file...{e}")
         sys.exit(1)
 
     # Creating migration report
@@ -548,11 +549,15 @@ if __name__ == "__main__":
 
                 #Getting root object
                 root = ncs.maagic.get_root(t)
-                
+                #Checking ned package is loaded on NSO
+                check_ned_package(root, new_ned_id)
+            
                 #Looping over the device list and performing NED migration 
                 for device in devices_list:
                     # Getting rid of \n
                     device = device.strip()
+
+
                 
                     # Structuring Migration Report
                     migration_report[device] = {}
@@ -561,7 +566,7 @@ if __name__ == "__main__":
                     migration_report[device]["info"]["new-ned-id"] = new_ned_id
                     migration_report[device]["prerequisites"] = {}
                     migration_report[device]["prerequisites"]["device-onboarded"] = False
-                    migration_report[device]["prerequisites"]["ned-loaded"] = False
+                    migration_report[device]["prerequisites"]["ned-loaded"] = True
                     migration_report[device]["prerequisites"]["device-not-already-migrated"] = False
                     
                     # Displaying device info and options
@@ -584,15 +589,12 @@ if __name__ == "__main__":
                     #Checking device is onboarded in NSO:
                     if not check_device_exists(root, device):
                         continue
+                    #Getting device object
+                    device_obj = root.devices.device[device]
                     migration_report[device]["prerequisites"]["device-onboarded"] = True
                     migration_report[device]["status"] = 'Not Migrated'
                     
-                    #Checking ned package is loaded on NSO
-                    check_ned_package(root, new_ned_id)
-                    migration_report[device]["prerequisites"]["ned-loaded"] = True
 
-                    #Getting device object
-                    device_obj = root.devices.device[device]
 
                     # Log the old ned id and displaying/logging it
                     ned_id = ncs.application.get_ned_id(device_obj).split(":")[0]
@@ -620,13 +622,15 @@ if __name__ == "__main__":
                         logging.warning(f"Skipping Ned migration for the device {device}")
 
                         # Updating migration report status
-                        migration_report[device]["status"] = 'Ned Migrated'
+                        #migration_report[device]["status"] = 'Ned Migrated'
+                        migration_report[device]["status"] = 'Device is already using the target NED'
                     else:
                         # Updating migration report prerequisites
                         migration_report[device]["prerequisites"]["device-not-already-migrated"] = True
 
                         # All prerequisites are checked, Calling ned_migrate() function
                         ned_migrate(root, device, new_ned_id, dry_run , no_networking)
+                        
 
                     progress_bar.increment()
     #Logging info
