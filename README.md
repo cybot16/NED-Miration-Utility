@@ -232,7 +232,7 @@ y
 ---
 
 ## JSON report:
-```
+```json
 {
     "NETSIM-DEVICE-2": {
         "options": {
