@@ -99,6 +99,8 @@ This is a utility that takes as an input a list of devices and a ned-id to migra
     b - NED migration JSON report : migration-datetime.json
 """
 
+ATTR_REFCOUNT = 0x80000002
+
 @dataclass
 class signs:
     OK = '[\033[92m*\033[0m]'
@@ -154,27 +156,56 @@ def extract_generic_path(path):
     return generic_path
 
 
-def extract_metadata(node, result):
-    if getattr(node, "_get_metadata", None):
-        node._get_metadata()
-        if hasattr(node, "_metadata") and node._metadata["backpointer"]:
-            # Some Node types don't have it, like ncs.maagic.Enum (?) ...
-            if getattr(node, "_path", None):
-                # Extract/Clean node path
-                generic_path = extract_generic_path(node._path)
-                result[generic_path] = {"bp": [], "refcount": ""}
-                result[generic_path]["bp"].extend(node._metadata["backpointer"])
-                result[generic_path]["refcount"] = node._metadata["refcount"]
+def extract_metadata(path, result, sock, th):
+    try:
+        res = _ncs.maapi.get_attrs(sock, th, [ATTR_REFCOUNT], path)
+        if res:
+            generic_path = extract_generic_path(path)
+            result['data'][generic_path] = {"bp": [], "refcount": 0}
+            result['data'][generic_path]['refcount'] = int(res[0].v)
+            try:
+                res = _ncs.maapi.get_attrs(sock, th, [ncs.ATTR_BACKPOINTER], path)
+                if res:
+                    result['data'][generic_path]['bp'].extend([str(inst) for inst in res[0].v])
+                    result['paths_with_bp'][generic_path] = [str(inst) for inst in res[0].v]
+            except _ncs.error.Error as e:
+                pass
+
+            if not result['data'][generic_path]['bp']:
+                # Here, we are calculating the parents for an object
+                # and try to found the service in charge of this resource
+                # when we don't find backpointers using '_ncs.maapi.get_attrs()'
+                list_parents = []
+                elmts = generic_path.split('/')
+                for i in range(1, len(elmts) - 1):
+                    list_parents.append('/'.join(elmts[:-i]))
+
+                # Then we compare each path of the list of parents with the dcit 'paths_with_bp'
+                # If it matches, we set the 'bp' to the list of instances that is part
+                # of the 'paths_wth_bp' that matched.
+                for path in list_parents:
+                    if path in result['paths_with_bp']:
+                        result['data'][generic_path]['bp'] = result['paths_with_bp'][path]
+                        # We need to break as we can have backpointer above that doesn't manage
+                        # our resource
+                        break
+
+    except _ncs.error.Error as e:
+        # Attributes are not available for operational data
+        # item does not exist (1)
+        # We can't do much here ... Maybe I should try to parse the error message
+        # but the error type is too generic ...
+        pass
 
 
-def parse_config(path, q, th, bp_res):
+def parse_config(path, q, th, bp_res, sock):
     node = ncs.maagic.get_node(th, path)
-    if isinstance(node, ncs.maagic.Container):
+    extract_metadata(path, bp_res, sock, th.th)
+    if isinstance(node, ncs.maagic.Container) or isinstance(node, ncs.maagic.PresenceContainer):
         for sub_node in node._children.get_children(node._backend, node):
-            extract_metadata(sub_node, bp_res)
             # ncs.maagic.Choice has the same _path as its parent ...
             # It's maybe not the only one ...
-            if getattr(sub_node, "_path", None) and sub_node._path != path:
+            if not isinstance(sub_node, ncs.maagic.Choice):
                 q.put(sub_node._path)
 
     elif isinstance(node, ncs.maagic.Action):
@@ -184,16 +215,16 @@ def parse_config(path, q, th, bp_res):
         if len(node) > 0:
             for elmt in node.keys():
                 keys = [str(key) for key in elmt]
-                extract_metadata(node[keys], bp_res)
+                # ncs.maagic.Choice has the same _path as its parent ...
+                # It's maybe not the only one ...
+                if not isinstance(node[keys], ncs.maagic.Choice):
+                    extract_metadata(node[keys]._path, bp_res, sock, th.th)
 
                 for child in node[keys]._children.get_children(node._backend, node):
                     # ncs.maagic.Choice has the same _path as its parent ...
                     # It's maybe not the only one ...
-                    if getattr(child, "_path", None) and child._path != path:
+                    if not isinstance(child, ncs.maagic.Choice):
                         q.put(child._path)
-
-    else:
-        extract_metadata(node, bp_res)
 
 
 def start_subtask(q, bp_res):
@@ -203,18 +234,21 @@ def start_subtask(q, bp_res):
                 while q.qsize() > 0:
                     try:
                         path = q.get(timeout=2)
-                        parse_config(path, q, th, bp_res)
+                        parse_config(path, q, th, bp_res, m.msock)
                     except queue.Empty:
-                        logger.info("Empty queue")
+                        logging.info("Empty queue")
                         break
                     except Exception as e:
-                        logger.error(f"{os.getpid()} - Error: {e}")
+                        logging.error(f"{os.getpid()} - Error: {e}")
                         raise
     return
 
 
 def get_backpointers(device):
     bp_res = {}
+    bp_res['paths_with_bp'] = {}
+    bp_res['data'] = {}
+
     q = queue.Queue()
     with ncs.maapi.Maapi() as m:
         with ncs.maapi.Session(m, "ned_migration", "system"):
@@ -222,12 +256,12 @@ def get_backpointers(device):
                 root = ncs.maagic.get_root(t)
 
                 conf = root.devices.device[device].config
-                list_xpath = [elmt._path for elmt in conf._children.get_children(t, conf)]
+                list_xpath = [elmt._path for elmt in conf._children.get_children(t, conf) if elmt._name not in ['yang-library', 'modules-state']]
                 for xpath in list_xpath:
                     q.put(xpath)
 
     threads = []
-    for i in range(0, cpu_count()):
+    for _ in range(0, cpu_count()):
         worker = Thread(target=start_subtask, args=(q, bp_res))
         threads.append(worker)
 
@@ -619,10 +653,9 @@ def ned_migrate(root, device, new_ned_id, dry_run, no_networking):
 
             # Second, compare the xpath of each BP retrieved and compare it with the list of modified paths
             affected_services = {}
-            for xpath, data in bp_dict.items():
-                for modified_path in list(migration_report[device]["dry-run"]["modified-paths"].keys()):
-                    if xpath in modified_path:
-                        affected_services[modified_path] = data['bp']
+            for path, data in bp_dict['data'].items():
+                if path in migration_report[device]["dry-run"]["modified-paths"]:
+                    affected_services[modified_path] = data['bp']
 
             if affected_services:
                 number_affected_services = display_affected_services(device, affected_services, with_changes=False)
@@ -639,6 +672,8 @@ def ned_migrate(root, device, new_ned_id, dry_run, no_networking):
                         # In case of user validation, proceeding the executing ned migration
                         proceedMigration = True
             else:
+                print(f"{signs.INFO} No services are impacted by the NED migration")
+                logging.info("No services are impacted by the NED migration")
                 # In case of user no affected services and no dry-run, proceeding automatically with ned migration
                 if not dry_run:
                     proceedMigration = True
