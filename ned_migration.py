@@ -150,46 +150,69 @@ logging.basicConfig(
     datefmt='%d-%b-%Y::%H:%M:%S'
 )
 
-
 def extract_generic_path(path):
-    generic_path = re.sub('/ncs:devices/device\{.*}/config', '', path)
-    generic_path = ('/').join([re.sub('\{.*}', '', part) for part in generic_path.split('/')])
-    return generic_path
+    # We remove the key instance from the path
+    # /alu:service/ies/subscriber-interface/address{10.10.10.1/26}
+    # '/' can be in the key so we can't simply split using '/'
+    generic_path = path
+    result = {'error': '', 'ok': ''}
+
+    while True:
+        counter = []
+
+        # Search for '{' character
+        sub_count = [m.start() for m in re.finditer(r'{', generic_path)]
+        if sub_count:
+            # We keep only the first index as when we will remove the key from the path
+            # next indexes will not be valid anymore
+            counter.append(sub_count[0])
+
+        # Search for '}' character
+        sub_count = [m.start() for m in re.finditer(r'}', generic_path)]
+        if sub_count:
+            counter.append(sub_count[0])
+
+        if counter:
+            # '{' will always be present before '}'
+            # I hope '{}' could not be part of a node config path
+            # Couldn't find this information in the RFC
+            counter.sort()
+
+            if len(counter) % 2 == 0 and len(counter) == 2:
+                generic_path = generic_path[:counter[0]] + generic_path[counter[1] + 1 :]
+            else:
+                print(f"Error: the following path cannot be sanitized '{path}'")
+                result['error'] = f"Path cannot be sanitized: {path}"
+                break
+        else:
+            break
+
+    if not result.get('error', None):
+        result['ok'] = re.sub('/ncs:devices/device/config', '', generic_path)
+    return result
 
 
 def extract_metadata(path, result, sock, th):
     try:
         res = _ncs.maapi.get_attrs(sock, th, [ATTR_REFCOUNT], path)
         if res:
-            generic_path = extract_generic_path(path)
-            result['data'][generic_path] = {"bp": [], "refcount": 0}
-            result['data'][generic_path]['refcount'] = int(res[0].v)
-            try:
-                res = _ncs.maapi.get_attrs(sock, th, [ncs.ATTR_BACKPOINTER], path)
-                if res:
-                    result['data'][generic_path]['bp'].extend([str(inst) for inst in res[0].v])
-                    result['paths_with_bp'][generic_path] = [str(inst) for inst in res[0].v]
-            except _ncs.error.Error as e:
-                pass
-
-            if not result['data'][generic_path]['bp']:
-                # Here, we are calculating the parents for an object
-                # and try to found the service in charge of this resource
-                # when we don't find backpointers using '_ncs.maapi.get_attrs()'
-                list_parents = []
-                elmts = generic_path.split('/')
-                for i in range(1, len(elmts) - 1):
-                    list_parents.append('/'.join(elmts[:-i]))
-
-                # Then we compare each path of the list of parents with the dcit 'paths_with_bp'
-                # If it matches, we set the 'bp' to the list of instances that is part
-                # of the 'paths_wth_bp' that matched.
-                for path in list_parents:
-                    if path in result['paths_with_bp']:
-                        result['data'][generic_path]['bp'] = result['paths_with_bp'][path]
-                        # We need to break as we can have backpointer above that doesn't manage
-                        # our resource
-                        break
+            cmd_res = extract_generic_path(path)
+            if cmd_res.get("ok", None):
+                generic_path = cmd_res['ok']
+                if not path in result['data']:
+                    result['data'][path] = {"generic_path": generic_path, "bp": [], "refcount": 0}
+                result['data'][path]['refcount'] = int(res[0].v)
+                try:
+                    res = _ncs.maapi.get_attrs(sock, th, [ncs.ATTR_BACKPOINTER], path)
+                    if res:
+                        result['data'][path]['bp'].extend([str(inst) for inst in res[0].v])
+                        if not path in result['paths_with_bp']:
+                            result['paths_with_bp'][path] = []
+                        result['paths_with_bp'][path].extend([str(inst) for inst in res[0].v])
+                except _ncs.error.Error as e:
+                    pass
+            else:
+                result['error'].append(res['error'])
 
     except _ncs.error.Error as e:
         # Attributes are not available for operational data
@@ -197,6 +220,31 @@ def extract_metadata(path, result, sock, th):
         # We can't do much here ... Maybe I should try to parse the error message
         # but the error type is too generic ...
         pass
+
+
+def search_bp_for_rc(result):
+    # We are trying to find the Backpointer for each node with only
+    # a refcount and no BP.
+    for path, data in result['data'].items():
+        if not data['bp']:
+            # Here, we are calculating the parents for an object
+            # and try to found the service in charge of this resource
+            # when we don't find backpointers using '_ncs.maapi.get_attrs()'
+            list_parents = []
+            elmts = path.split('/')
+            list_parents.append('/'.join(elmts))
+            for i in range(0, len(elmts) - 1):
+                list_parents.append('/'.join(elmts[:-i]))
+
+            # Then we compare each path of the list of parents with the dcit 'paths_with_bp'
+            # If it matches, we set the 'bp' to the list of instances that is part
+            # of the 'paths_wth_bp' that matched.
+            for sub_path in list_parents:
+                if sub_path in result['paths_with_bp']:
+                    result['data'][path]['bp'] = result['paths_with_bp'][sub_path]
+                    # We need to break as we can have backpointer above that doesn't manage
+                    # our resource
+                    break
 
 
 def parse_config(path, q, th, bp_res, sock):
@@ -237,18 +285,19 @@ def start_subtask(q, bp_res):
                         path = q.get(timeout=2)
                         parse_config(path, q, th, bp_res, m.msock)
                     except queue.Empty:
-                        logging.info("Empty queue")
+                        print("Empty queue")
                         break
                     except Exception as e:
-                        logging.error(f"{os.getpid()} - Error: {e}")
+                        print(f"Error: {e}")
                         raise
     return
 
 
 def get_backpointers(device):
     bp_res = {}
-    bp_res['paths_with_bp'] = {}
     bp_res['data'] = {}
+    bp_res['error'] = []    
+    bp_res['paths_with_bp'] = {}
 
     q = queue.Queue()
     with ncs.maapi.Maapi() as m:
@@ -272,6 +321,7 @@ def get_backpointers(device):
     for thread in threads:
         thread.join()
 
+    search_bp_for_rc(bp_res)
     return bp_res
 
 
@@ -466,7 +516,7 @@ def display_affected_services(device, device_migrate_result, with_changes=False)
             # Getting the list of services with changes
             affected_services = device_migrate_result.affected_services_with_changes.as_list()
             affected_services_index = "affected-services-with-changes"
-    
+
             # Displaying and logging affected services with changes by the ned migration action
             print(f"{signs.INFO} Affected services with changes: the service instances/points " \
                   "that are affected by the data model \n\t\t changes on the migrated device. " \
@@ -478,7 +528,7 @@ def display_affected_services(device, device_migrate_result, with_changes=False)
             # Getting the list of services 
             affected_services = device_migrate_result.affected_services.as_list()
             affected_services_index = "affected-services"
-    
+
             # Displaying/ logging affected services by the ned migration action
             print(f"{signs.INFO} Affected services: The service instances/points " \
                   f"that touches the migrated device {signs.OKBLUE}{device}{signs.ENDC}")
@@ -652,11 +702,18 @@ def ned_migrate(root, device, new_ned_id, dry_run, no_networking):
             logging.info(f"{signs.INFO} Requesting device config backpointers: This operation may take several minutes (more CPU you have, quicker it will be).\n")
             bp_dict = get_backpointers(device)
 
-            # Second, compare the xpath of each BP retrieved and compare it with the list of modified paths
             affected_services = {}
-            for path, data in bp_dict['data'].items():
-                if path in migration_report[device]["dry-run"]["modified-paths"]:
-                    affected_services[modified_path] = data['bp']
+            for _, data in bp_dict['data'].items():
+                if data['generic_path'] in migration_report[device]["dry-run"]["modified-paths"]:
+                    if data['generic_path'] in affected_services:
+                        affected_services[data['generic_path']].extend(data['bp'])
+                    else:
+                        affected_services[data['generic_path']]= data['bp']
+
+            if bp_dict.get('error', None):
+                print(f"{signs.WARNING}[?] The following errors have been seen:")
+                for err in bp_dict['error']:
+                    print(f"\t{signs.WARNING}[?] {err}")
 
             if affected_services:
                 number_affected_services = display_affected_services(device, affected_services, with_changes=False)
@@ -711,7 +768,11 @@ if __name__ == "__main__":
                  f"device-list-file: {devices_list_file}")
     # Reading the devices_list input file
     try:
-        devices_list = open(devices_list_file, "r").readlines()
+        with open(devices_list_file, "r") as file:
+            devices_list = file.read().splitlines()
+        # Remove empty strings from the list
+        # Like when the file finishes with new lines
+        devices_list = list(filter(None, devices_list))
         print(f"{signs.OK} Reading devices list file...")
         logging.info("Reading devices list file...")
         display_separator()
@@ -732,7 +793,6 @@ if __name__ == "__main__":
     with ncs.maapi.Maapi() as m:
         with ncs.maapi.Session(m, 'ned_migration_tool', 'system'):
             with m.start_read_trans() as t:
-
                 # Getting root object
                 root = ncs.maagic.get_root(t)
                 # Get NSO version
@@ -744,9 +804,6 @@ if __name__ == "__main__":
 
                 # Looping over the device list and performing NED migration
                 for device in devices_list:
-                    # Getting rid of '\n'
-                    device = device.strip()
-
                     # Structuring Migration Report
                     migration_report['nso_version'] = nso_ver
                     migration_report[device] = {}
@@ -819,7 +876,7 @@ if __name__ == "__main__":
                     progress_bar.increment()
 
     # Logging info
-    print() 
     logging.info("Transaction Closed")
     # Writing migration report into a file
     write_json("migration", migration_report)
+
