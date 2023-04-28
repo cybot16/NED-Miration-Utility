@@ -56,12 +56,13 @@ import builtins
 import argparse
 import ncs.application
 from os import cpu_count
+from mergedeep import merge
 from datetime import datetime
-from threading import Thread
 from dataclasses import dataclass
+from multiprocessing import Pool, Manager
 from argparse import RawTextHelpFormatter
 
-__version__ = "1.3"
+__version__ = "1.4"
 
 FIGLET = f"""
  ______  _______ _____      ______  _                       _             
@@ -290,7 +291,7 @@ def start_subtask(q, bp_res):
                     except Exception as e:
                         print(f"Error: {e}")
                         raise
-    return
+    return bp_res
 
 
 def get_backpointers(device):
@@ -299,7 +300,8 @@ def get_backpointers(device):
     bp_res['error'] = []    
     bp_res['paths_with_bp'] = {}
 
-    q = queue.Queue()
+    manager = Manager()
+    q = manager.Queue()
     with ncs.maapi.Maapi() as m:
         with ncs.maapi.Session(m, "ned_migration", "system"):
             with m.start_read_trans(ncs.RUNNING) as t:
@@ -310,16 +312,18 @@ def get_backpointers(device):
                 for xpath in list_xpath:
                     q.put(xpath)
 
-    threads = []
+    pool = Pool(cpu_count())
+    results = []
     for _ in range(0, cpu_count()):
-        worker = Thread(target=start_subtask, args=(q, bp_res))
-        threads.append(worker)
+        result = pool.apply_async(start_subtask, args=(q, bp_res))
+        results.append(result)
 
-    for thread in threads:
-        thread.start()
+    pool.close()
+    pool.join()
 
-    for thread in threads:
-        thread.join()
+
+    for r in results:
+        merge(bp_res, r.get())
 
     search_bp_for_rc(bp_res)
     return bp_res
