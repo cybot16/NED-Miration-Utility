@@ -305,4 +305,4 @@ y
 - Web UI for a better user experience
 - Generates statistics of the NED migrations( success/failure)
 - Contains other devices management functionnalities
-- Support import of devices lists
+- <s> Support import of devices lists</s>
